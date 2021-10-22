@@ -2,8 +2,10 @@ package com.github.com.leoguedex.vendas.domain.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 
 @Data // criar todos os encapsulamentos, equals e toString
 @Entity // Informa que é uma classe que sera mapeada para o banco
@@ -19,9 +21,12 @@ public class Cliente {
     private Integer id;
 
     @Column(name = "nome", length = 100) // Nome coluna e tamanho da coluna
+    @NotEmpty(message = "Campo nome é obrigatório")
     private String nome;
 
     @Column(name = "cpf", length = 11) // Nome coluna e tamanho da coluna
+    @CPF(message = "Informe um CPF válido") // Validador de CPF
+    @NotEmpty(message = "Campo CPF é obrigatório")
     private String cpf;
 
 }
