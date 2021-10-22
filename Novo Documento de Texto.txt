@@ -1,0 +1,6 @@
+Tecnologias usadas: 
+- SpringBoot
+- JPA
+- H2
+- MYSQL DRIVER 
+- LOMBOK
