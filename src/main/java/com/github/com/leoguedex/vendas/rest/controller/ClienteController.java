@@ -1,5 +1,4 @@
 package com.github.com.leoguedex.vendas.rest.controller;
-
 import com.github.com.leoguedex.vendas.domain.entity.Cliente;
 import com.github.com.leoguedex.vendas.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
