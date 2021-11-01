@@ -1,4 +1,5 @@
 package com.github.com.leoguedex.vendas.domain.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -6,6 +7,7 @@ import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import java.util.Set;
 
 @Data // criar todos os encapsulamentos, equals e toString
 @Entity // Informa que é uma classe que sera mapeada para o banco
@@ -28,5 +30,9 @@ public class Cliente {
     @CPF(message = "Informe um CPF válido") // Validador de CPF
     @NotEmpty(message = "Campo CPF é obrigatório")
     private String cpf;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "cliente")
+    private Set<Pedido> pedidos;
 
 }
