@@ -17,6 +17,8 @@ import java.util.List;
 @RequestMapping("/api/clientes") // Identifica o caminho (url principal) da api
 public class ClienteController {
 
+private static final String CLIENTE_NAO_ENCONTRADO = "Produto Não Encontrado";
+
     @Autowired //Impede a criação de varias instancias e cria um objeto unico, com metodos prontos.
     private ClienteRepository clienteRepository;
 
@@ -37,7 +39,7 @@ public class ClienteController {
                     clienteRepository.save(cliente);
                     return Void.TYPE;
                 })
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENTE_NAO_ENCONTRADO));
     }
 
     @DeleteMapping("/{id}")
@@ -48,14 +50,14 @@ public class ClienteController {
                     clienteRepository.delete(clienteFound);
                     return Void.TYPE;
                 })
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENTE_NAO_ENCONTRADO));
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Cliente findClienteById(@PathVariable Integer id){
     return    clienteRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENTE_NAO_ENCONTRADO));
     }
 
     @GetMapping()
