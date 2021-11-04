@@ -1,4 +1,5 @@
 package com.github.com.leoguedex.vendas.rest;
+import com.github.com.leoguedex.vendas.exception.RegraNegocioException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,5 +30,12 @@ public class ApplicationControlerAdvice {
     public  ApiErrors handleResponseStatusException(ResponseStatusException ex){
         return new ApiErrors(ex.getReason());
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(RegraNegocioException.class)
+    public  ApiErrors handlerRegraNegocioException(RegraNegocioException ex){
+        return new ApiErrors(ex.getMessage());
+    }
+
 
 }
