@@ -33,13 +33,21 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public Pedido includePedido(PedidoDto pedidoDto) {
         //Encontra o cliente
-        Cliente cliente = clienteRepository.findById(pedidoDto.getCliente()).orElseThrow(() -> new RegraNegocioException("Código de Cliente inválido"));
+        Cliente cliente = findCliente(pedidoDto);
         //Cria um novo pedido
-        Pedido pedido = new Pedido();
-        pedido.setCliente(cliente);
-        pedido.setDataPedido(LocalDate.now());
-        pedido.setStatus(StatusPedido.REALIZADO);
-        pedido.setTotal(pedidoDto.getTotal());
+        Pedido pedido = Pedido.builder()
+                .cliente(cliente)
+                .dataPedido(LocalDate.now())
+                .total(pedidoDto.getTotal())
+                .status(StatusPedido.REALIZADO)
+                .build();
+
+//
+//        Pedido pedido = new Pedido();
+//        pedido.setCliente(cliente);
+//        pedido.setDataPedido(LocalDate.now());
+//        pedido.setStatus(StatusPedido.REALIZADO);
+//        pedido.setTotal(pedidoDto.getTotal());
 
         //Monta os itens do pedido
         if (pedidoDto.getItens().isEmpty()) {
@@ -49,10 +57,15 @@ public class PedidoServiceImpl implements PedidoService {
         List<ItemPedido> itens = pedidoDto.getItens().stream()
                 .map(itemPedidoDto -> {
                     Produto produto = produtoRepository.findById(itemPedidoDto.getProduto()).orElseThrow(() -> new RegraNegocioException("Código de Cliente inválido"));
-                    ItemPedido itemPedido = new ItemPedido();
-                    itemPedido.setPedido(pedido);
-                    itemPedido.setProduto(produto);
-                    itemPedido.setQuantidade(itemPedidoDto.getQuantidade());
+                    ItemPedido itemPedido = ItemPedido.builder()
+                            .pedido(pedido)
+                            .produto(produto)
+                            .quantidade(itemPedidoDto.getQuantidade())
+                            .build();
+//                    ItemPedido itemPedido = new ItemPedido();
+//                    itemPedido.setPedido(pedido);
+//                    itemPedido.setProduto(produto);
+//                    itemPedido.setQuantidade(itemPedidoDto.getQuantidade());
                     return itemPedido;
                 })
                 .collect(Collectors.toList());
@@ -61,6 +74,11 @@ public class PedidoServiceImpl implements PedidoService {
         itemPedidoRepository.saveAll(itens);
 
         return pedido;
+    }
+
+    private Cliente findCliente(PedidoDto pedidoDto) {
+        return clienteRepository.findById(pedidoDto.getCliente())
+                .orElseThrow(() -> new RegraNegocioException("Código de Cliente inválido"));
     }
 
 }
