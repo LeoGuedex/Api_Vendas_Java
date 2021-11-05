@@ -1,4 +1,5 @@
 package com.github.com.leoguedex.vendas.rest;
+import com.github.com.leoguedex.vendas.exception.PedidoNaoEncontradoException;
 import com.github.com.leoguedex.vendas.exception.RegraNegocioException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -34,6 +35,13 @@ public class ApplicationControlerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(RegraNegocioException.class)
     public  ApiErrors handlerRegraNegocioException(RegraNegocioException ex){
+        return new ApiErrors(ex.getMessage());
+    }
+
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(PedidoNaoEncontradoException.class)
+    public  ApiErrors handlerPedidoNaoEncontradoException(PedidoNaoEncontradoException ex){
         return new ApiErrors(ex.getMessage());
     }
 

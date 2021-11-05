@@ -5,6 +5,7 @@ import com.github.com.leoguedex.vendas.domain.entity.ItemPedido;
 import com.github.com.leoguedex.vendas.domain.entity.Pedido;
 import com.github.com.leoguedex.vendas.domain.entity.Produto;
 import com.github.com.leoguedex.vendas.domain.enums.StatusPedido;
+import com.github.com.leoguedex.vendas.exception.PedidoNaoEncontradoException;
 import com.github.com.leoguedex.vendas.exception.RegraNegocioException;
 import com.github.com.leoguedex.vendas.repository.ClienteRepository;
 import com.github.com.leoguedex.vendas.repository.ItemPedidoRepository;
@@ -15,8 +16,10 @@ import com.github.com.leoguedex.vendas.service.PedidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,16 +35,14 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public Pedido includePedido(PedidoDto pedidoDto) {
+        //Monta os itens do pedido
+        validItens(pedidoDto);
         //Encontra o cliente
         Cliente cliente = findCliente(pedidoDto);
         //Cria um novo pedido
-        Pedido pedido = Pedido.builder()
-                .cliente(cliente)
-                .dataPedido(LocalDate.now())
-                .total(pedidoDto.getTotal())
-                .status(StatusPedido.REALIZADO)
-                .build();
+        Pedido pedido = builderPedido(pedidoDto, cliente);
 
+        List<ItemPedido> itens = builderItemPedido(pedidoDto, pedido);
 //
 //        Pedido pedido = new Pedido();
 //        pedido.setCliente(cliente);
@@ -49,12 +50,31 @@ public class PedidoServiceImpl implements PedidoService {
 //        pedido.setStatus(StatusPedido.REALIZADO);
 //        pedido.setTotal(pedidoDto.getTotal());
 
-        //Monta os itens do pedido
-        if (pedidoDto.getItens().isEmpty()) {
-            throw new RegraNegocioException("Não é possivel realizar um pedido sem itens.");
-        }
+        pedidoRepository.save(pedido);
+        itemPedidoRepository.saveAll(itens);
 
-        List<ItemPedido> itens = pedidoDto.getItens().stream()
+        return pedido;
+    }
+
+    @Override
+    public Optional<Pedido> exibirPedido(Integer id) {
+        return pedidoRepository.findByIdFetchItens(id);
+    }
+
+    @Override
+    @Transactional
+    public void updateStatus(Integer id, StatusPedido statusPedido) {
+        pedidoRepository.findById(id)
+                .map(pedido -> {
+                    pedido.setStatus(statusPedido);
+                    return pedidoRepository.save(pedido);
+                })
+                .orElseThrow(()-> new PedidoNaoEncontradoException("Pedido não foi localizado."));
+    }
+
+
+    private List<ItemPedido> builderItemPedido(PedidoDto pedidoDto, Pedido pedido) {
+        return pedidoDto.getItens().stream()
                 .map(itemPedidoDto -> {
                     Produto produto = produtoRepository.findById(itemPedidoDto.getProduto()).orElseThrow(() -> new RegraNegocioException("Código de Cliente inválido"));
                     ItemPedido itemPedido = ItemPedido.builder()
@@ -69,11 +89,21 @@ public class PedidoServiceImpl implements PedidoService {
                     return itemPedido;
                 })
                 .collect(Collectors.toList());
+    }
 
-        pedidoRepository.save(pedido);
-        itemPedidoRepository.saveAll(itens);
+    private void validItens(PedidoDto pedidoDto) {
+        if (pedidoDto.getItens().isEmpty()) {
+            throw new RegraNegocioException("Não é possivel realizar um pedido sem itens.");
+        }
+    }
 
-        return pedido;
+    private Pedido builderPedido(PedidoDto pedidoDto, Cliente cliente) {
+        return Pedido.builder()
+                .cliente(cliente)
+                .dataPedido(LocalDate.now())
+                .total(pedidoDto.getTotal())
+                .status(StatusPedido.REALIZADO)
+                .build();
     }
 
     private Cliente findCliente(PedidoDto pedidoDto) {
