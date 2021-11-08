@@ -36,7 +36,10 @@ public class ProdutoController {
                     produtoRepository.save(produto);
                     return Void.TYPE;
                 })
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, PRODUTO_NAO_ENCONTRADO));
+                .orElseThrow(() -> {
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, PRODUTO_NAO_ENCONTRADO);
+                    return null;
+                });
     }
 
 
