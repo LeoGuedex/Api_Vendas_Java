@@ -1,5 +1,7 @@
 package com.github.com.leoguedex.vendas.security;
 
+import com.github.com.leoguedex.vendas.security.jwt.JwtAuthFilter;
+import com.github.com.leoguedex.vendas.security.jwt.JwtService;
 import com.github.com.leoguedex.vendas.service.impl.UsuarioServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 
 @EnableWebSecurity
@@ -21,15 +25,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private UsuarioServiceImpl usuarioService;
 
+    @Autowired
+    private JwtService jwtService;
+
 
     @Bean //CRIAR UM GRÃO
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public OncePerRequestFilter jwtAuthFilter(){
+        return new JwtAuthFilter(jwtService, usuarioService);
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        super.configure(auth);
+        auth.userDetailsService(usuarioService).passwordEncoder(passwordEncoder());
     }
 
     @Override
@@ -39,14 +51,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/clientes/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/api/pedidos/**").hasAnyRole("USER", "ADMIN")
-                .antMatchers("api/produtos/**").hasAnyRole("USER", "ADMIN")
+                .antMatchers("api/produtos/**").hasAnyRole("ADMIN")
                 .antMatchers(HttpMethod.POST,"/api/usuarios/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .headers().frameOptions().sameOrigin();
+                .headers().frameOptions().sameOrigin()
+                .and()
+                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+                ;
     }
 
     @Override

@@ -9,6 +9,8 @@ import com.github.com.leoguedex.vendas.service.impl.UsuarioServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,14 +48,11 @@ public class UsuarioController {
                     .senha(credencialDto.getSenha())
                     .build();
 
-            Usuario usuarioAutenticado = usuarioService.authenticate(usuario);
-
+            UserDetails usuarioAutenticado = usuarioService.authenticate(usuario);
             String token = jwtService.gerarToken(usuario);
-
             return new TokenDto(usuario.getLogin(), token);
 
-
-        } catch (SenhaInvalidaException e){
+        } catch (UsernameNotFoundException | SenhaInvalidaException e){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }

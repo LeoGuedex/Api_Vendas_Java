@@ -55,7 +55,7 @@ public class JwtService {
     }
 
     //tratamento
-    private boolean tokenValid(String token){
+    public boolean tokenValid(String token){
         try {
             Claims claims = obterClaims(token);
             Date expiration = claims.getExpiration();
