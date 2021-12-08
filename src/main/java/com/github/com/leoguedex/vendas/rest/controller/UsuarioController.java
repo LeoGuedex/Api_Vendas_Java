@@ -6,6 +6,9 @@ import com.github.com.leoguedex.vendas.rest.dto.CredencialDto;
 import com.github.com.leoguedex.vendas.rest.dto.TokenDto;
 import com.github.com.leoguedex.vendas.security.jwt.JwtService;
 import com.github.com.leoguedex.vendas.service.impl.UsuarioServiceImpl;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.http.HttpStatus;
@@ -29,6 +32,11 @@ public class UsuarioController {
 
 
     @PostMapping
+    @ApiOperation(value = "Cria um novo usuario no app")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Usuario criado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro de validação"),
+    })
     @ResponseStatus(HttpStatus.CREATED)
     public Usuario save(@RequestBody @Valid Usuario usuario) {
 //        String senha = usuario.getSenha();
@@ -39,6 +47,11 @@ public class UsuarioController {
     }
 
     @PostMapping("/auth")
+    @ApiOperation(value = "Autentica o acesso de um usuario no app")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Usuario autenticado com sucesso"),
+            @ApiResponse(code = 404, message = "Usuario não autenticado"),
+    })
     @ResponseStatus(HttpStatus.OK)
     public TokenDto authenticate(@RequestBody CredencialDto credencialDto) {
         try{

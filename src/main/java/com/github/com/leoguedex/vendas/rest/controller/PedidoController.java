@@ -7,6 +7,7 @@ import com.github.com.leoguedex.vendas.rest.dto.InformacaoItemPedidoDto;
 import com.github.com.leoguedex.vendas.rest.dto.InformacaoPedidoDto;
 import com.github.com.leoguedex.vendas.rest.dto.PedidoDto;
 import com.github.com.leoguedex.vendas.service.PedidoService;
+import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 
 @RestController
+@Api(value = "API DE Pedidos")
 @RequestMapping("/api/pedidos")
 public class PedidoController {
 
@@ -29,14 +31,25 @@ public class PedidoController {
     }
 
     @PostMapping
+    @ApiOperation(value = "Cria um novo pedido")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Pedido Criado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro de validação"),
+            @ApiResponse(code = 403, message = "Usuario sem direito de acesso"),
+    })
     @ResponseStatus(HttpStatus.CREATED)
     public Integer includePedido(@RequestBody @Valid PedidoDto pedidoDto){
         Pedido pedido = pedidoService.includePedido(pedidoDto);
         return pedido.getId();
-
     }
 
     @GetMapping("/{id}")
+    @ApiOperation(value = "Exibe os dados de um novo pedido")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Pedido localizado com sucesso"),
+            @ApiResponse(code = 403, message = "Usuario sem direito de acesso"),
+            @ApiResponse(code = 404, message = "Pedido não encontrado"),
+    })
     @ResponseStatus(HttpStatus.OK)
     public InformacaoPedidoDto exibirPedido(@PathVariable Integer id){
         return pedidoService.exibirPedido(id)
@@ -45,12 +58,18 @@ public class PedidoController {
     }
 
     @PutMapping("/{id}")
+    @ApiOperation(value = "Atualiza um pedido existente")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Pedido atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Pedido não encontrado"),
+            @ApiResponse(code = 403, message = "Usuario sem direito de acesso"),
+            @ApiResponse(code = 405, message = "Opcao de Status Invalida"),
+    })
     @ResponseStatus(HttpStatus.OK)
     private void updateStatus(@PathVariable Integer id, @RequestBody AtualizacaoStatusPedidoDto atualizacaoStatusPedidoDto){
         String novoStatus = atualizacaoStatusPedidoDto.getNovoStatus();
         pedidoService.updateStatus(id, StatusPedido.valueOf(novoStatus));
     }
-
 
     private InformacaoPedidoDto builderInformacaoPedidoDto(Pedido pedido) {
         String dataPedido = pedido.getDataPedido().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -74,6 +93,4 @@ public class PedidoController {
                     .build()
                 ).collect(Collectors.toList());
     }
-
-
 }
